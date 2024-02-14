@@ -1,9 +1,11 @@
 import java.util.*;
+import java.util.concurrent.*;
 
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
         String[] texts = new String[25];
+        List<Future<Integer>> futures = new ArrayList<>();
         List<Thread> threads = new ArrayList<>();
 
         for (int i = 0; i < texts.length; i++) {
@@ -12,7 +14,7 @@ public class Main {
 
         long startTs = System.currentTimeMillis(); // start time
         for (String text : texts) {
-            Runnable algo = () -> {
+            Callable<Integer> algo = () -> {
                 int maxSize = 0;
                 for (int i = 0; i < text.length(); i++) {
                     for (int j = 0; j < text.length(); j++) {
@@ -32,16 +34,21 @@ public class Main {
                     }
                 }
                 System.out.println(text.substring(0, 100) + " -> " + maxSize);
+                return maxSize;
             };
-            Thread thread = new Thread(algo);
-            threads.add(thread);
-            thread.start();
+            FutureTask<Integer> future = new FutureTask<>(algo);
+            futures.add(future);
+            new Thread(future).start();
+
         }
-        for (Thread thread : threads) {
-            thread.join(); // зависаем, ждём когда поток объект которого лежит в thread завершится
+        int max = Integer.MIN_VALUE;
+        int current = 0;
+        for (Future<Integer> future : futures) {
+            current = future.get();
+            max = Math.max(current, max); // зависаем, ждём когда поток объект которого лежит в thread завершится
         }
         long endTs = System.currentTimeMillis(); // end time
-
+        System.out.println("Max = " + max);
         System.out.println("Time: " + (endTs - startTs) + "ms");
     }
 
