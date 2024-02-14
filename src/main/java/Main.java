@@ -6,7 +6,6 @@ public class Main {
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         String[] texts = new String[25];
         List<Future<Integer>> futures = new ArrayList<>();
-        List<Thread> threads = new ArrayList<>();
 
         for (int i = 0; i < texts.length; i++) {
             texts[i] = generateText("aab", 30_000);
@@ -42,7 +41,7 @@ public class Main {
 
         }
         int max = Integer.MIN_VALUE;
-        int current = 0;
+        int current;
         for (Future<Integer> future : futures) {
             current = future.get();
             max = Math.max(current, max); // зависаем, ждём когда поток объект которого лежит в thread завершится
